@@ -1,0 +1,6 @@
+!#bin/bash
+
+status: number "string"
+date:$DATE
+server:permortal/cit-384/$cg160746
+echo ""
