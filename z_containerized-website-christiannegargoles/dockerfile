@@ -1,0 +1,17 @@
+# Obtain a starting image for the Apache Web Server
+FROM httpd
+RUN apt-get update
+RUN apt install -y wget
+RUN apt install -y curl
+RUN apt-get update
+
+# Set the working directory to match DocumentRoot                                   
+WORKDIR /usr/local/apache2/htdocs
+
+# Copy your index.html file to DocumentRoot directory               
+COPY index.html .                               
+
+# Add in other directives as needed
+ LABEL Maintainer: "christianne.gargoles.439@my.csun.edu"
+# RUN
+# EXEC

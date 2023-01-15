@@ -1,0 +1,49 @@
+# Obtain a starting image for the Apache Web Server
+FROM ubuntu:latest
+ARG DEBIAN_FRONTEND=nonintercative
+RUN apt-get update
+RUN apt-get install vim -y
+RUN apt-get install sudo -y
+RUN apt-get install apache2 -y
+RUN apt-get install apache2-utils
+
+# To add user                                 
+RUN sudo adduser user
+RUN sudo passwd -d user
+RUN sudo usermod -aG sudo user
+
+# Set the working directory to match DocumentRoot 
+WORKDIR /home/user/public_html
+RUN sudo a2enmod userdir
+RUN sudo a2enmod autoindex
+RUN sudo a2enmod alias
+RUN sudo a2enmod rewrite
+RUN sudo a2enmod ssl
+RUN sudo a2enmod headers
+
+#Copy the index.html file to DocumentRoot directory
+COPY index.html . 
+
+#Copy index.html file to /var/www
+WORKDIR /var/www/html
+COPY index.html .
+
+#Creates the Directory Structure, Grant Permission and Vhost
+WORKDIR /var/www 
+RUN sudo mkdir -p /var/www/site1.internal/public_html
+RUN sudo chown -R $USER:$USER /var/www/site1.internal/public_html
+RUN sudo chmod -R 755 /var/www
+WORKDIR /var/www/site1.internal/public_html
+COPY index.html . 
+RUN sudo a2dissite 000-default.conf
+#Create a demo page for Vhost 
+WORKDIR /etc/apache2/sites-available 
+COPY site1.conf .
+RUN sudo a2ensite site1.conf
+WORKDIR /etc/apache2/
+RUN mkdir ssl
+RUN openssl req -x509 -nodes -days 365 -subj  "/C=US/ST=CA/O=ssl.site/CN=site1.internal" -newkey rsa:2048 -keyout /etc/apache2/ssl/site1.internal.key -out /etc/apache2/ssl/site1.internal.crt
+# Add in other directives as needed
+LABEL Maintainer: "christianne.gargoles.439@my.csun.edu"
+EXPOSE 80 443
+ENTRYPOINT [ "/usr/sbin/apache2ctl", "-D", "FOREGROUND" ]
